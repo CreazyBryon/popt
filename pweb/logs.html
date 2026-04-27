@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>POP Logs</title>
+    <style>
+        :root {
+            color-scheme: light;
+            --bg: #f5f7fb;
+            --panel: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #dbe2ea;
+            --accent: #0f766e;
+            --accent-2: #134e4a;
+            --error: #b91c1c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        input,
+        button {
+            font: inherit;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        input {
+            width: 110px;
+            background: #fff;
+        }
+
+        button {
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        button:hover {
+            background: var(--accent-2);
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        }
+
+        .meta {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .error {
+            padding: 14px 16px;
+            color: var(--error);
+            border-bottom: 1px solid var(--border);
+            display: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            font-size: 13px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        tbody tr:hover {
+            background: #f8fbff;
+        }
+
+        .empty {
+            padding: 24px 16px;
+            color: var(--muted);
+        }
+
+        .message-cell {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .timestamp-column,
+        .timestamp-cell {
+            width: 220px;
+            white-space: nowrap;
+        }
+
+        .message-column {
+            width: auto;
+        }
+
+        @media (max-width: 720px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+            }
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
+                display: block;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tr {
+                padding: 12px 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            td {
+                border: 0;
+                padding: 6px 16px;
+                width: 100%;
+                white-space: normal;
+            }
+
+            td::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 12px;
+                text-transform: uppercase;
+                color: var(--muted);
+                margin-bottom: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>POP Logs</h1>
+            <div class="controls">
+                <input id="limitInput" type="number" min="1" max="1000" value="100" />
+                <button id="refreshButton" type="button">Refresh</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div id="meta" class="meta">Loading logs...</div>
+            <div id="error" class="error"></div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="timestamp-column">Timestamp</th>
+                        <th class="message-column">Message</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody"></tbody>
+            </table>
+            <div id="emptyState" class="empty" style="display: none;">No logs found.</div>
+        </div>
+    </div>
+
+    <script>
+        const meta = document.getElementById('meta');
+        const errorBox = document.getElementById('error');
+        const tableBody = document.getElementById('logTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const limitInput = document.getElementById('limitInput');
+        const refreshButton = document.getElementById('refreshButton');
+        const timestampFormatter = new Intl.DateTimeFormat(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        const formatTimestamp = (value) => {
+            if (!value) {
+                return '';
+            }
+
+            const date = new Date(value);
+
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+
+            return timestampFormatter.format(date);
+        };
+
+        const setError = (message) => {
+            errorBox.style.display = message ? 'block' : 'none';
+            errorBox.textContent = message || '';
+        };
+
+        const renderLogs = (logs) => {
+            tableBody.innerHTML = '';
+
+            if (!Array.isArray(logs) || logs.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            for (const log of [...logs].reverse()) {
+                const row = document.createElement('tr');
+
+                const timestampCell = document.createElement('td');
+                timestampCell.setAttribute('data-label', 'Timestamp');
+                timestampCell.className = 'timestamp-cell';
+                timestampCell.textContent = formatTimestamp(log.timestamp);
+
+                const messageCell = document.createElement('td');
+                messageCell.setAttribute('data-label', 'Message');
+                messageCell.className = 'message-cell';
+                messageCell.textContent = log.message || '';
+
+                row.appendChild(timestampCell);
+                row.appendChild(messageCell);
+                tableBody.appendChild(row);
+            }
+        };
+
+        const loadLogs = async () => {
+            const limit = Math.min(Math.max(Number(limitInput.value) || 100, 1), 1000);
+
+            meta.textContent = 'Loading logs...';
+            setError('');
+
+            try {
+                const response = await fetch('/api/pop/logs?limit=' + encodeURIComponent(limit));
+
+                if (!response.ok) {
+                    throw new Error('Request failed with status ' + response.status);
+                }
+
+                const payload = await response.json();
+                const logs = Array.isArray(payload.data) ? payload.data : [];
+
+                renderLogs(logs);
+                meta.textContent = 'Showing ' + logs.length + ' log(s). Last updated: ' + new Date().toLocaleString();
+            } catch (error) {
+                renderLogs([]);
+                setError(error.message || 'Failed to load logs.');
+                meta.textContent = 'Unable to load logs.';
+            }
+        };
+
+        refreshButton.addEventListener('click', loadLogs);
+        limitInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                loadLogs();
+            }
+        });
+
+        loadLogs();
+    </script>
+</body>
+</html>

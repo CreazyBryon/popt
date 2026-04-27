@@ -1,0 +1,151 @@
+import pyautogui
+import time
+
+import pop_login
+import pop_controller
+
+from datetime import datetime, timedelta
+
+import logging
+from utils.logging_config import setup_logging
+logger = logging.getLogger(__name__)
+
+
+def readHistory():
+    logger.debug('readHistory....................')
+    text_file = open("smt.txt", "r")
+    lines = text_file.readlines()
+    text_file.close()
+    
+    accounts={}
+ 
+    for line in lines:
+        aitem=line.strip()
+        if(len(aitem)>0):
+            acc, dt, hh = aitem.split('@')
+            accounts[acc]=[datetime.strptime(dt,'%Y-%m-%d %H:%M:%S.%f'),int(hh)]
+    
+    return accounts
+
+ 
+shm_account_states=readHistory()
+
+  
+def saveHistory():
+    logger.debug('saveHistory....................')
+    with open('smt.txt', 'w') as file:
+        for key, value in shm_account_states.items():
+            file.write(f'{key}@{value[0]}@{value[1]}\n')    
+ 
+
+def do_lingqu(acc,ttt,hh):
+    
+    current_datetime = datetime.now()
+ 
+    if(ttt<current_datetime):
+        logger.debug('time reached, start lingqu, account:%s', acc)
+  
+        pyautogui.press('ctrl')
+        isLoged = pop_login.login2(acc)
+        if not isLoged:
+            logger.debug('login failed, account:%s', acc)
+            return -1
+        
+
+        logger.debug('lingqu jiangli')
+        pop_controller.jianglixiang()
+        pop_controller.goumai(slot=4,lv1=1,lv2=0,scrolls=1)
+
+        #lingqu shenmi
+        logger.debug('lingqu shenmi, account:%s, ttt:%s, hh:%s', acc, ttt, hh)
+        h1,m1=pop_controller.lingqu_shenmi(acc,hh)
+        
+        if(h1==0 and m1==0):
+            logger.debug('linqu failed, account:%s', acc)
+            return -1
+        
+        new_time = datetime.now() + timedelta(hours=h1,minutes=(m1+1))
+        shm_account_states[acc]=[new_time,h1]
+        logger.debug('lingqu success, account:%s, next time:%s', acc, new_time)
+ 
+        return 0
+    else:
+        time_left=ttt-current_datetime
+        logger.debug('not time yet, left:%s@%s@%s', acc, time_left, hh)
+        return time_left.total_seconds()
+    
+
+
+
+def r9worker(round9=6):
+    pop_controller.open_room_9()
+    current_round=0
+    success_round=0
+
+    while success_round<round9:
+        current_round=current_round+1
+        isfinished=pop_controller.run9()
+        
+        if isfinished:
+            success_round=success_round+1   
+        
+        logger.debug('current round:%s, success round: %s', current_round, success_round)
+ 
+        time.sleep(0.2)
+
+    logger.debug("r9worker exiting...")
+
+
+
+
+def shenmi():
+    shm_round=0
+    shm_box_count=0
+
+    while True:
+        shm_round=shm_round+1
+        logger.debug('round:%s;box:%s', shm_round, shm_box_count)
+        open_count=0
+        last_account=None
+        min_left_time=9999999
+        
+        for acc in shm_account_states:
+            dt,hh = shm_account_states[acc]
+            box_left_time = do_lingqu(acc,dt,hh)
+
+            if box_left_time==0:
+                open_count=open_count+1
+                shm_box_count = shm_box_count+1
+                last_account = acc
+                saveHistory()
+            elif box_left_time>0:
+                if box_left_time<min_left_time:
+                    min_left_time=box_left_time
+
+            if box_left_time==-1:
+                logger.debug('account:%s has error, stop whole process', acc)
+                return
+                
+        
+        if(last_account!=None):
+            logger.debug('last account=%s', last_account)    
+        
+        #if min_left_time>1200:
+        if 1==2:
+            logger.debug('start auto run......')
+            r9worker()
+
+        
+        logger.debug('finished, open box:%s; total box:%s', open_count, shm_box_count)
+    
+        time.sleep(60)
+
+
+
+if __name__ == '__main__':
+    setup_logging()
+    time.sleep(2)
+    shenmi()
+
+
+
