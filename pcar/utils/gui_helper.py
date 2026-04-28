@@ -123,7 +123,7 @@ def _hud_loop(text, x, y, w, h):
     _running = False
 
 
-def show_hud(text="HUD", x=400, y=30, w=500, h=60):
+def show_hud(text="HUD", x=400, y=10, w=500, h=60):
     global _hud_thread
 
     if _hud_thread and _hud_thread.is_alive():

@@ -53,8 +53,8 @@ def do_lingqu(acc,ttt,hh):
         
 
         logger.debug('lingqu jiangli')
-        pop_controller.jianglixiang()
-        pop_controller.goumai(slot=4,lv1=1,lv2=0,scrolls=1)
+        #pop_controller.jianglixiang()
+        #pop_controller.goumai(slot=4,lv1=1,lv2=0,scrolls=1)
 
         #lingqu shenmi
         logger.debug('lingqu shenmi, account:%s, ttt:%s, hh:%s', acc, ttt, hh)
@@ -75,28 +75,7 @@ def do_lingqu(acc,ttt,hh):
         return time_left.total_seconds()
     
 
-
-
-def r9worker(round9=6):
-    pop_controller.open_room_9()
-    current_round=0
-    success_round=0
-
-    while success_round<round9:
-        current_round=current_round+1
-        isfinished=pop_controller.run9()
-        
-        if isfinished:
-            success_round=success_round+1   
-        
-        logger.debug('current round:%s, success round: %s', current_round, success_round)
  
-        time.sleep(0.2)
-
-    logger.debug("r9worker exiting...")
-
-
-
 
 def shenmi():
     shm_round=0
@@ -133,7 +112,7 @@ def shenmi():
         #if min_left_time>1200:
         if 1==2:
             logger.debug('start auto run......')
-            r9worker()
+            pop_controller.autorun9(round_limit=6,is_limit_finish=True)
 
         
         logger.debug('finished, open box:%s; total box:%s', open_count, shm_box_count)

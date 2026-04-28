@@ -38,18 +38,15 @@ class GlobalState:
             self.task_history.append(self.current_task)
 
         self.current_task = task
+ 
+        logger.critical(f'Starting [{self.current_account}],total:{total_round},isfinish:{counting_succeed}')
 
     def refresh_run_task(self, succeed):
         if self.current_task is None:
             logger.warning("No current task to refresh")
             return True
-        
-        current_round = self.current_task.finished_round
-        finish_round = self.current_task.succeed_round
-        round_limit = self.current_task.total_round
-        account = self.current_account
-
-        logger.error(f'[{account}],round:{current_round},success:{finish_round},total:{round_limit}')
+         
+        logger.error(f'[{self.current_account}],round:{self.current_task.finished_round},success:{self.current_task.succeed_round},total:{self.current_task.total_round}')
 
         self.current_task.finished_round += 1
         if succeed:
@@ -57,7 +54,7 @@ class GlobalState:
 
         if self.current_task.finished_round >= self.current_task.total_round:
             self.current_task.completedAt = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-            logger.critical(f'Autorun task completed for account:{account}, total rounds: {round_limit}, successful rounds: {finish_round}')
+            logger.critical(f'Autorun task completed for account:{self.current_account}, total rounds: {self.current_task.total_round}, successful rounds: {self.current_task.succeed_round}')
             return True
 
         return False
@@ -66,13 +63,8 @@ class GlobalState:
         if self.current_task is None:
             logger.error("No current task to check")
             return False
-        
-        current_round = self.current_task.finished_round
-        finish_round = self.current_task.succeed_round
-        round_limit = self.current_task.total_round
-        account = self.current_account
-
-        logger.error(f'[{account}],round:{current_round},success:{finish_round},total:{round_limit}')
+         
+        logger.error(f'[{self.current_account}],round:{self.current_task.finished_round},success:{self.current_task.succeed_round},total:{self.current_task.total_round}')
  
 
 global_state = GlobalState()

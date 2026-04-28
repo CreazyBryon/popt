@@ -295,6 +295,7 @@ def login2(acid, forced=False):
             logger.debug('karter running, but not at front, close it')
             closeKarter()            
 
+    logger.critical('start to login with account: %s', acid)
  
     time.sleep(3)
     startT = str(datetime.now())
@@ -313,14 +314,14 @@ def login2(acid, forced=False):
             if(lres==-1):#retry
                 time.sleep(3)
                 lres = login0(acid)
-                 
-            logger.debug('login finished for account: %s', acid)
+             
             global_state.current_account = acid
             wait_until_pop_running(is_clear_login=True)
             pyautogui.screenshot(account_name_pic, region=pop_consts.ACCOUNT_NAME_AREA_REGION)
+            logger.critical('login succeed for account: %s; start: %s; end: %s', acid, startT, str(datetime.now()))
             return True;
 
-    logger.debug('All finished for account: %s; start: %s; end: %s', acid, startT, str(datetime.now()))
+    logger.critical('login failed for account: %s; start: %s; end: %s', acid, startT, str(datetime.now()))
     return False;
 
 
