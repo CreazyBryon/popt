@@ -33,17 +33,10 @@ const addLog = async ({ request, response }) => {
 	try {
 		const body = await readJsonBody(request);
 		console.log('Received request body:', body);
-		const { message } = body;
-
-		if (typeof message !== 'string') {
-			sendJson(response, 400, {
-				error: 'Message must be a string.',
-			});
-			return;
-		}
-
+		const { message,time } = body;
+ 
 		popLogs.logs.push({
-			timestamp: new Date().toISOString(),
+			timestamp: time,
 			message,
 		});
 

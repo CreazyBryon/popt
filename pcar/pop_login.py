@@ -283,7 +283,7 @@ def login2(acid, forced=False):
                 logger.debug("Account name image not found: %s", account_name_pic)
                 closeKarter()   
             else:
-                loc = pyautogui.locateOnScreen(rf'pics\{acid}.png',confidence=0.8,region=pop_consts.ACCOUNT_NAME_AREA_REGION)
+                loc = pyautogui.locateOnScreen(rf'pics\{acid}.png',confidence=0.8,region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
                 if(loc!=None):
                     logger.debug('already logged in with account: %s', acid)
                     global_state.current_account = acid
@@ -317,7 +317,7 @@ def login2(acid, forced=False):
              
             global_state.current_account = acid
             wait_until_pop_running(is_clear_login=True)
-            pyautogui.screenshot(account_name_pic, region=pop_consts.ACCOUNT_NAME_AREA_REGION)
+            pyautogui.screenshot(account_name_pic, region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
             logger.critical('login succeed for account: %s; start: %s; end: %s', acid, startT, str(datetime.now()))
             return True;
 

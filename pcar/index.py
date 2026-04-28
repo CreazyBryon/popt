@@ -9,6 +9,6 @@ setup_logging()
  
 logger.critical('This is a critical message')
 
-for i in range(5):
+for i in range(3):
     logger.info(f'Info message {i}')
     time.sleep(1)
