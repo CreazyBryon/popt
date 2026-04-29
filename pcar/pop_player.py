@@ -8,13 +8,18 @@ setup_logging()
 
 def play(acc):
  
-    pop_login.login2(acc)
+    logged = pop_login.login2(acc)
+
+    if not logged:
+        print(f'cancel play, login failed for account: {acc}')
+        return
+    
     print('lingqu jiangli')
     pop_controller.jianglixiang()
     #print('gou mai')
     #pop_controller.goumai(slot=4,lv1=1,lv2=0,scrolls=1)
     pop_controller.autorun9(10)
-    print('shen mi')
+    #print('shen mi')
     #pop_shm.shenmi()
 
 
