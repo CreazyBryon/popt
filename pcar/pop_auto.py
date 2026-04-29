@@ -45,7 +45,7 @@ def run9_blind():
         time.sleep(1.5)#run straight for 1.5s
 
     print('route finished, stop turning, waiting 10 seconds')
-    time.sleep(10)
+    time.sleep(10)#581,702=62,70,84
     mykb.release(SC_UP)#drive end
     print('drive end, release up, checking result')
 

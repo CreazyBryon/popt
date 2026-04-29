@@ -103,6 +103,7 @@ def doYzm():
     logger.debug('yzm failed after 20 retries')
     return False
 
+
 def launchPP():
     for i in range(30):
         logger.debug('logging in, waiting...')
@@ -141,13 +142,15 @@ def launchPP():
             logger.debug('login process finished, launch clicked, waiting for game to showup')
             for i in range(60):
                 time.sleep(1)
-                loc = pyautogui.locateOnScreen(r'pics\kr.png',confidence=0.7)
                 
-                if(loc==None):
-                    logger.debug('not running yet')
-                else:
+                pop_px = pyautogui.pixel(*pop_consts.POP_ICON_POS)
+                
+                if(pop_px == pop_consts.POP_ICON_COLOR):
                     logger.debug('karter started running')
-                    return 1;  
+                    return 1;      
+                else:
+                    logger.debug('not running yet')
+                  
     
     logger.debug('launch button not found after 30 retries, something wrong, retry login')  
     return -1;
@@ -196,9 +199,14 @@ def login0(acid):
     
     isLaunch = launchPP()
 
+    if(isLaunch==1):
+        return 1;
+
     if(isLaunch==-1):
         logger.debug('login failed, retry')
         return -1;
+
+
   
     logger.debug('karter start failed, something wrong, retry click launch')
     return launchPP()

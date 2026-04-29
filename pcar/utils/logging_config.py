@@ -14,8 +14,8 @@ def http_emit(record):
     #send async http request to server to log the message
     print(f"Sending log to server: {msg1}")
     #apost('http://localhost:3000/api/pop/logs', json_body ={'message': msg1}, timeout=60)
-    #url = 'https://joofoo002.azurewebsites.net/api/pop/logs'
-    url='http://localhost:3000/api/pop/logs'
+    url = 'https://joofoo002.azurewebsites.net/api/pop/logs'
+    #url='http://localhost:3000/api/pop/logs'
     body = {
         'message': msg1,
         'time': datetime.now().isoformat().replace("+00:00", "Z")

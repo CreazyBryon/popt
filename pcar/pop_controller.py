@@ -131,20 +131,9 @@ def autorun9(round_limit=5,is_limit_finish=True):
 def wait_until_room_ready():
 
     for i in range(50):
-        loc1 = pyautogui.locateOnScreen(r'pics\dklj.png',confidence=0.9)
-        if loc1!=None:
-            logger.debug('connection failed, need to restart')
-            pyautogui.click(693,465)#queding
-            raise NeedRelaunchError()
 
-        pyautogui.click(750,613)#guoqi
-        pyautogui.click(657,544)#qiandao 1     
-        time.sleep(1)        
-        pyautogui.click(1110,123)#qiandao 2
-        pyautogui.click(685,574)
-
-        loc2 = pyautogui.locateOnScreen(r'pics\zbing.png',confidence=0.9)
-        if loc2!=None:
+        pix = pyautogui.pixel(1063, 678)
+        if pix==(40,136,255):
             logger.debug('play is ready')
             return True
             
@@ -155,9 +144,8 @@ def wait_until_room_ready():
 def wait_until_rush_finish():
 
     for rrr in range(20):
-        loc = pyautogui.locateOnScreen(r'pics\kl.png',confidence=0.8)    
-        if loc!=None:
-            logger.debug(f'found kl.png at location: {loc}')
+        pix = pyautogui.pixel(549,122)    
+        if pix==(255,255,255):
             return True
             
         time.sleep(1)
@@ -327,10 +315,11 @@ def readTimes():
 if __name__ == '__main__':
     setup_logging()
     time.sleep(3)
+    run9()
     #goumai(slot=9,lv1=5,lv2=6,scrolls=1)
     #autorun9(6)
     #dafuweng()
-    autorun9(round_limit=10,is_limit_finish=True)
+    #autorun9(round_limit=10,is_limit_finish=True)
     #logger.debug(f'autorun9 completed, current round:{current_round}, success round: {finish_round}, round limit: {round_limit}')
     time.sleep(2)
 
