@@ -23,15 +23,18 @@ def is_run_stopped():
 
 def wait_until_rush_finish():
 
-    for rrr in range(20):
+    for rrr in range(50):
         time.sleep(1)
-        pix = pyautogui.pixel(*pop_consts.MAP_TERMINAL_POS)    
-        if pix==pop_consts.MAP_TERMINAL_COLOR:
-            print('terminal reached, rush finished')
+        pix = pyautogui.pixel(*pop_consts.MAP_PODIUM_POS)    
+        if pix==pop_consts.MAP_PODIUM_COLOR:
+            print('podium show up, checking race result')
             pix2 = pyautogui.pixel(*pop_consts.MAP_RANKING_POS)    
             if pix2==pop_consts.MAP_RANKING_COLOR:
                 print('rush finished with ranking, return true')
                 return True
+            else:
+                print('rush finished without ranking, return false')
+                return False
  
     return False
 

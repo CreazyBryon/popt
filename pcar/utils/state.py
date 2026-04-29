@@ -41,23 +41,70 @@ class GlobalState:
  
         logger.critical(f'Starting [{self.current_account}],total:{total_round},isfinish:{counting_succeed}')
 
+
+#   def refresh_run_task(self, succeed):
+#       if self.current_task is None:
+#           logger.warning("No current task to refresh")
+#           return True
+#        
+#       logger.error(f'[{self.current_account}],round:{self.current_task.finished_round},success:{self.current_task.succeed_round},total:{self.current_task.total_round}')
+#
+#       self.current_task.finished_round += 1
+#       if succeed:
+#           self.current_task.succeed_round += 1
+#
+#       if self.current_task.finished_round >= self.current_task.total_round:
+#           if self.current_task.counting_succeed:
+#               if self.current_task.succeed_round < self.current_task.total_round:
+#                   self.current_task.completedAt = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+#                   logger.critical(f'Autorun task completed for account:{self.current_account}, total rounds: {self.current_task.total_round}, successful rounds: {self.current_task.succeed_round}')
+#           else:
+#               self.current_task.completedAt = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+#               logger.critical(f'Autorun task completed for account:{self.current_account}, total rounds: {self.current_task.total_round}, successful rounds: {self.current_task.succeed_round}')
+#               return True
+#
+#       return False
+
+
     def refresh_run_task(self, succeed):
         if self.current_task is None:
             logger.warning("No current task to refresh")
             return True
-         
-        logger.error(f'[{self.current_account}],round:{self.current_task.finished_round},success:{self.current_task.succeed_round},total:{self.current_task.total_round}')
 
-        self.current_task.finished_round += 1
-        if succeed:
-            self.current_task.succeed_round += 1
+        task = self.current_task
 
-        if self.current_task.finished_round >= self.current_task.total_round:
-            self.current_task.completedAt = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-            logger.critical(f'Autorun task completed for account:{self.current_account}, total rounds: {self.current_task.total_round}, successful rounds: {self.current_task.succeed_round}')
+        if task.completedAt is not None:
             return True
 
-        return False
+        task.finished_round += 1
+        if succeed:
+            task.succeed_round += 1
+
+        logger.info(
+            f'[{self.current_account}],'
+            f'round:{task.finished_round},'
+            f'success:{task.succeed_round},'
+            f'total:{task.total_round}'
+        )
+
+        rounds_finished = task.finished_round >= task.total_round
+        all_succeeded = task.succeed_round >= task.total_round
+
+        is_completed = rounds_finished and (
+            all_succeeded if task.counting_succeed else True
+        )
+
+        if is_completed:
+            task.completedAt = datetime.now(timezone.utc).isoformat(
+                timespec="milliseconds"
+            ).replace("+00:00", "Z")
+            logger.critical(
+                f'Autorun task completed for account:{self.current_account}, '
+                f'total rounds: {task.total_round}, '
+                f'successful rounds: {task.succeed_round}'
+            )
+
+        return is_completed    
     
     def check_run_task(self):
         if self.current_task is None:
