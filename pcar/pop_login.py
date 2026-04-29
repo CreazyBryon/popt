@@ -103,53 +103,45 @@ def doYzm():
     logger.debug('yzm failed after 20 retries')
     return False
 
+def is_karter_up():              
+    pop_px = pyautogui.pixel(*pop_consts.POP_ICON_POS)       
+    return pop_px == pop_consts.POP_ICON_COLOR
+
+ 
+def is_tc_game_up():
+    tc_px = pyautogui.pixel(*pop_consts.LOGIN_WINDOW_CHECK_POS)       
+    return tc_px == pop_consts.LOGIN_WINDOW_CHECK_COLOR
+
 
 def launchPP():
     for i in range(30):
-        logger.debug('logging in, waiting...')
         time.sleep(1)
-
-        loc = pyautogui.locateOnScreen(r'pics\mmcw.png',confidence=0.9)
-        
-        if(loc!=None):
-            logger.debug('Login failed due to incorrect password, retry!!!')
-            return -1;
-
-        loc = pyautogui.locateOnScreen(r'pics\zzyx.png',confidence=0.9)
+        pix = pyautogui.pixel(*pop_consts.LOGIN_LAUNCH_BUTTON_POS)
+        logger.debug('launch button pixel color: %s', pix)
  
-        if(loc!=None):
+        if(pix==pop_consts.LOGIN_LAUNCH_BUTTON_RUNNING_COLOR):
             logger.debug('running, stop first')
-            pyautogui.click(1257,726)# stop pp
-            time.sleep(1)
-            pyautogui.click(629,465)# que ren 
-
-        
-        logger.debug('start to check if launch button existing')
-        loc2 = pyautogui.locateOnScreen(r'pics\qd.png',confidence=0.9)
-        
-        if(loc2!=None):      
-            loc = pyautogui.locateOnScreen(r'pics\duodi.png',confidence=0.8)
-            
-            if(loc!=None):
-                logger.debug('Login failed due to multiple login attempts, retry!!!')
-                pyautogui.click(500,500)
-                return -1;            
-        
+            pyautogui.click(*pop_consts.LOGIN_LAUNCH_BUTTON_POS)# stop pp
+            time.sleep(0.1)
+            pyautogui.press('enter')# que ren 
+  
+        elif(pix==pop_consts.LOGIN_LAUNCH_BUTTON_READY_COLOR):      
             logger.debug('launch button found, login success, click launch')
-            time.sleep(1)
-            pyautogui.click(1025,638)#qi dong
+
+            pyautogui.click(*pop_consts.LOGIN_LAUNCH_BUTTON_POS)#qi dong
 
             logger.debug('login process finished, launch clicked, waiting for game to showup')
             for i in range(60):
-                time.sleep(1)
-                
-                pop_px = pyautogui.pixel(*pop_consts.POP_ICON_POS)
-                
-                if(pop_px == pop_consts.POP_ICON_COLOR):
+                time.sleep(1)    
+                if(is_karter_up()):
                     logger.debug('karter started running')
                     return 1;      
                 else:
                     logger.debug('not running yet')
+            logger.debug('karter win not show up after 60s, something wrong, retry click launch')
+            return -1;
+        else:
+            logger.debug('launch button color not matched, retry: %d', i)
                   
     
     logger.debug('launch button not found after 30 retries, something wrong, retry login')  
@@ -224,21 +216,105 @@ def clear_login():
         pyautogui.click(1109,103)#dafuweng    
 
 
-def killkt():
-    os.system(r'taskkill /F /IM KartRider.exe')
+def kill_kt():
+    os.system(r'taskkill /IM KartRider.exe /F ')
 
-def closeKarter():
-    loc = pyautogui.locateOnScreen(r'pics\kr.png',confidence=0.6)
+def kill_tc_game():
+    os.system(r'taskkill /IM TCGame.exe /F ')
+
+def callup_tc_game():
+    pyautogui.click(*pop_consts.TC_GAME_BAR_POS)
+
+def callup_karter():
+    pyautogui.click(*pop_consts.KARTER_BAR_POS)
+
+def is_login_window_up():
+    loc = pyautogui.locateOnScreen(r'pics\slider.png',confidence=0.9)
+    return loc!=None;
+ 
+
+def return_login():
+    logger.debug('stop karter if running')
+    kill_kt()
+    logger.debug('try to switch account')
     
-    if(loc==None):
-        logger.debug('no running')
-    else:
-        logger.debug('karter running, stop first')
-        killkt()
-        time.sleep(2)
-        pyautogui.click(1057,129)#click user
+    if(is_login_window_up()):
+        logger.debug('login window show up')
+        return True;
+
+    if is_tc_game_running() and not is_tc_game_up():
+        logger.debug('tc game is running but not up, click tc game bar to wake it up')
+        callup_tc_game()
         time.sleep(3)
+
+    if not is_tc_game_up(): 
+        logger.debug('tc game is not up even after click, something wrong, retry by kill tc game and click again')
+        kill_tc_game()
+        time.sleep(1)
+        callup_tc_game()
+        for i in range(30):
+            time.sleep(1)
+            if is_tc_game_up():
+                logger.debug('tc game is up, switch account')
+                pyautogui.click(1057,129)#click user
+                time.sleep(2)
+                pyautogui.click(1097,261)#switch account
+                time.sleep(3)
+                break
+             
+
+    if is_tc_game_up():
+        logger.debug('tc game is up, switch account')
+        pyautogui.click(1057,129)#click user
+        time.sleep(2)
         pyautogui.click(1097,261)#switch account
+
+
+    logger.debug('start to check if login window show up')
+    for i in range(60):
+        time.sleep(1)
+        if(is_login_window_up()):
+            logger.debug('login window show up')
+            return True;
+
+        logger.debug('login window not show up, retry: %d', i)
+
+    return False;
+ 
+
+def reset_login():
+    logger.debug('reset login, kill tc game and karter')
+    kill_kt()    
+    kill_tc_game()
+    time.sleep(3)
+    callup_tc_game()
+    for i in range(30):
+        time.sleep(1)
+        if is_tc_game_up():
+            logger.debug('tc game is still up, switch account')   
+            pyautogui.click(1057,129)#click user
+            time.sleep(2)
+            pyautogui.click(1097,261)#switch account
+            time.sleep(3)
+            break
+        else:
+            if(is_login_window_up()):
+                logger.debug('login window show up')
+                return True;
+
+ 
+    logger.debug('start to check if login window show up')
+    for i in range(60):
+        time.sleep(1)
+        if(is_login_window_up()):
+            logger.debug('login window show up')
+            return True;
+
+        logger.debug('login window not show up, retry: %d', i)
+
+    return False;
+ 
+
 
 def get_pid(name):
     result = subprocess.run(
@@ -250,33 +326,37 @@ def get_pid(name):
             return int(line.split()[1])
     
     return None
- 
+
 
 def is_running():  
     return get_pid("KartRider.exe") != None
 
-def login2(acid, forced=False):
- 
+def is_tc_game_running():  
+    return get_pid("TCGame.exe") != None
+
+def is_already_login(acid):
     account_name_pic= rf'pics\{acid}.png'  
 
     if is_running():
-        if forced:
-            logger.debug('forced login, close karter first')
-            closeKarter()
-        else:
-            logger.debug('karter running, check if already logged in with account: %s', acid)
-            loc = pyautogui.locateOnScreen(r'pics\kr.png',confidence=0.6) 
+        if not is_karter_up():  
+             logger.debug('karter running, but not at front, close it first')
+             callup_karter()
 
-            if(loc!=None):                   
-                if global_state.current_account == acid:
-                    logger.debug(f"already logged in with account: {acid}")
-                    return True;
-    
+        if is_karter_up():         
+            logger.debug('karter is up, check login state')          
+            if global_state.current_account == acid:
+                logger.debug(f"already logged in with account: {acid}")
+                return True;
+        
+            if global_state.current_account is not None:
+                logger.debug(f"currently logged in with account: {global_state.current_account}, but expected: {acid}, close it first")
+                return False;
+            else:
                 logger.debug('karter running, but global state not updated, check if already logged in with account: %s', acid)
 
                 if not os.path.exists(account_name_pic):
                     logger.debug("Account name image not found: %s", account_name_pic)
-                    closeKarter()   
+                    return False;   
                 else:
                     loc = pyautogui.locateOnScreen(rf'pics\{acid}.png',confidence=0.8,region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
                     if(loc!=None):
@@ -285,39 +365,45 @@ def login2(acid, forced=False):
                         return True;
                     else:
                         logger.debug('logged in with other account, close it first')
-                        closeKarter()
-            else:
-                logger.debug('karter running, but not at front, close it')
-                closeKarter()            
+                        return False;
+        else:
+            logger.debug('karter running, but not show up even after click, something wrong, close it first')
+            return False;
+       
+    else:
+        logger.debug('karter not running, no account logged in')
+        return False
 
-    logger.critical('start to login with account: %s', acid)
+
+
+def login2(acid, forced=False):
  
+    if not forced and is_already_login(acid):
+        return True;
+    
+    is_login_up = return_login()
+
+    logger.critical('start to login with account: %s', acid) 
     time.sleep(3)
     startT = str(datetime.now())
  
-    for i in range(20):
-        time.sleep(1)
-        loc = pyautogui.locateOnScreen(r'pics\slider.png',confidence=0.9)
+    if(is_login_up):
+        logger.debug('start to login since login window is up')        
+        time.sleep(2)
+        lres = login0(acid)
         
-        if(loc==None):
-            logger.debug('no login window')
-        else:    
-            logger.debug('logining')        
-            time.sleep(2)
+        if(lres==-1):#retry
+            time.sleep(3)
+            logger.debug('login failed, retry once')
             lres = login0(acid)
-            
-            if(lres==-1):#retry
-                time.sleep(3)
-                lres = login0(acid)
-
-
-            if (lres==1): 
-                global_state.current_account = acid
-                time.sleep(5)#wait pop statble after login
-                clear_login()
-                pyautogui.screenshot(account_name_pic, region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
-                logger.critical('login succeed for account: %s; start: %s; end: %s', acid, startT, str(datetime.now()))
-                return True;
+ 
+        if (lres==1): 
+            global_state.current_account = acid
+            time.sleep(5)#wait pop statble after login
+            clear_login()
+            pyautogui.screenshot(rf'pics\{acid}.png', region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
+            logger.critical('login succeed for account: %s; start: %s; end: %s', acid, startT, str(datetime.now()))
+            return True;    
 
     logger.critical('login failed for account: %s; start: %s; end: %s', acid, startT, str(datetime.now()))
     return False;
@@ -325,28 +411,23 @@ def login2(acid, forced=False):
 
 def login_st(acid):
     time.sleep(1)
-    closeKarter()
-    for i in range(20):
-        time.sleep(1)
-        loc = pyautogui.locateOnScreen(r'pics\slider.png',confidence=0.9)
-        
-        if(loc==None):
-            logger.debug('no login window')
-        else:
-            logger.debug('logining')        
-            time.sleep(2)
-            lres = login0(acid)
-            
-            if(lres==-1):#retry
-                time.sleep(3)
-                lres = login0(acid)
-            
-            if (lres==1): 
-                logger.critical('login st succeed for account: %s', acid)
-                      
-            time.sleep(5)
+    is_login_up = return_login()
  
+    if(is_login_up): 
+        logger.debug('start to login for ST since login window is up')        
+        time.sleep(2)
+        lres = login0(acid)
+        
+        if(lres==-1):#retry
+            logger.debug('login failed for ST, retry once')
+            time.sleep(3)
+            lres = login0(acid)
+        
+        if (lres==1): 
+            logger.critical('login st succeed for account: %s', acid)
+            time.sleep(5)
             return True;
+ 
     return False;
  
 
