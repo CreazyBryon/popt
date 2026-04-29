@@ -141,16 +141,6 @@ def wait_until_room_ready():
     
     return False
 
-def wait_until_rush_finish():
-
-    for rrr in range(20):
-        pix = pyautogui.pixel(549,122)    
-        if pix==(255,255,255):
-            return True
-            
-        time.sleep(1)
-    
-    return False
 
 def run9():
     
@@ -158,11 +148,8 @@ def run9():
         logger.debug('room is not ready, return')
         return False
  
-    pop_auto.run9_blind()
-  
-    return wait_until_rush_finish()
-
-
+    return pop_auto.run9_blind()
+   
  
 def goumai(slot,lv1=0,lv2=0, scrolls=0):
     pyautogui.click(*pop_consts.UI_ICON_POS_SHOP)

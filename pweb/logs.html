@@ -77,6 +77,15 @@
             background: var(--accent-2);
         }
 
+        .danger-button {
+            background: var(--error);
+            border-color: var(--error);
+        }
+
+        .danger-button:hover {
+            background: #991b1b;
+        }
+
         .panel {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -198,6 +207,7 @@
             <div class="controls">
                 <input id="limitInput" type="number" min="1" max="1000" value="100" />
                 <button id="refreshButton" type="button">Refresh</button>
+                <button id="clearButton" class="danger-button" type="button">Clear All</button>
             </div>
         </div>
 
@@ -224,6 +234,7 @@
         const emptyState = document.getElementById('emptyState');
         const limitInput = document.getElementById('limitInput');
         const refreshButton = document.getElementById('refreshButton');
+        const clearButton = document.getElementById('clearButton');
         const timestampFormatter = new Intl.DateTimeFormat(undefined, {
             year: 'numeric',
             month: '2-digit',
@@ -306,7 +317,37 @@
             }
         };
 
+        const clearLogs = async () => {
+            const confirmed = window.confirm('Clear all logs?');
+
+            if (!confirmed) {
+                return;
+            }
+
+            meta.textContent = 'Clearing logs...';
+            setError('');
+            clearButton.disabled = true;
+
+            try {
+                const response = await fetch('/api/pop/logs', {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Request failed with status ' + response.status);
+                }
+
+                await loadLogs();
+            } catch (error) {
+                setError(error.message || 'Failed to clear logs.');
+                meta.textContent = 'Unable to clear logs.';
+            } finally {
+                clearButton.disabled = false;
+            }
+        };
+
         refreshButton.addEventListener('click', loadLogs);
+        clearButton.addEventListener('click', clearLogs);
         limitInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 loadLogs();

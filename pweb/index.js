@@ -15,7 +15,15 @@ const server = http.createServer(async (request, response) => {
 		}));
 	}
 });
+const start = async () => {
+	await routes.initialize();
 
-server.listen(port, () => {
-	console.log(`API service listening on http://localhost:${port}`);
+	server.listen(port, () => {
+		console.log(`API service listening on http://localhost:${port}`);
+	});
+};
+
+start().catch((error) => {
+	console.error('Failed to start server:', error);
+	process.exit(1);
 });

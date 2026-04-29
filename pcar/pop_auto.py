@@ -1,6 +1,8 @@
 import time
 from utils import win32_native as mykb
 from utils.state import global_state
+import utils.constants as pop_consts
+import pyautogui
 
 #scan codes
 SC_UP    = 0x48
@@ -15,7 +17,23 @@ SC_ESC=0x01
 SC_ENTER=0x1C
 SC_SHIFT=0x2A
 
+def is_run_stopped():              
+    pop_px = pyautogui.pixel(*pop_consts.MAP_CAR_BOARD_POS)       
+    return pop_px != pop_consts.MAP_CAR_BOARD_COLOR
+
+def wait_until_rush_finish():
+
+    for rrr in range(20):
+        time.sleep(1)
+        pix = pyautogui.pixel(*pop_consts.MAP_TERMINAL_POS)    
+        if pix==pop_consts.MAP_TERMINAL_COLOR:
+            print('terminal reached, rush finished')
+            pix2 = pyautogui.pixel(*pop_consts.MAP_RANKING_POS)    
+            if pix2==pop_consts.MAP_RANKING_COLOR:
+                print('rush finished with ranking, return true')
+                return True
  
+    return False
 
 def run9_blind():
     
@@ -43,11 +61,22 @@ def run9_blind():
         time.sleep(0.3)#turn right for 0.3s
         mykb.release(SC_RIGHT)
         time.sleep(1.5)#run straight for 1.5s
+        if is_run_stopped():
+            print('rush finished, break the straightaway loop at step:', i)
+            break;
 
-    print('route finished, stop turning, waiting 10 seconds')
-    time.sleep(10)#581,702=62,70,84
+    print('route finished, turning stopped')
+    #time.sleep(10)#581,702=62,70,84
+    for i in range(30):
+        if is_run_stopped():
+            print('rush finished, release up')
+            break
+        time.sleep(1)
+
     mykb.release(SC_UP)#drive end
     print('drive end, release up, checking result')
+
+    return wait_until_rush_finish()
 
 
 

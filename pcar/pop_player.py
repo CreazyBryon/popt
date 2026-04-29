@@ -21,6 +21,7 @@ def play(acc):
     pop_controller.autorun9(10)
     #print('shen mi')
     #pop_shm.shenmi()
+    time.sleep(5)
 
 
 def plays(accs):

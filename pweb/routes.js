@@ -9,8 +9,9 @@ const routeHandlers = {
 	'POST /api/echo': controller.postEcho,
 
 	'GET /api/pop/logs': popController.getLogs,
-    'POST /api/pop/logs': popController.addLog,
-    'GET /page/pop/logs': popController.getLogPage,
+	'POST /api/pop/logs': popController.addLog,
+	'DELETE /api/pop/logs': popController.clearLogs,
+	'GET /page/pop/logs': popController.getLogPage,
 };
 
 const buildContext = (request, response) => {
@@ -33,6 +34,11 @@ const handleRequest = async (request, response) => {
 	await handler(context);
 };
 
+const initialize = async () => {
+	await popController.ensureLoaded();
+};
+
 module.exports = {
+	initialize,
 	handleRequest,
 };
