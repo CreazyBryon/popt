@@ -41,6 +41,7 @@ def st(accs):
 
 if __name__ == '__main__':
     print('hello world')
+    time.sleep(3)
     # Example usage
     #pop_login.login2('1234567890')
-    #pop_controller.run9()
+    pop_controller.run9()

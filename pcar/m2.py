@@ -11,7 +11,7 @@ while True:
  
     print(mp)
 
-    mp = pyautogui.pixel(1361, 42)
+    mp = pyautogui.pixel(581, 702)
  
     print(mp)
  

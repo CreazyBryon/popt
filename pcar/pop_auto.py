@@ -18,8 +18,8 @@ SC_ENTER=0x1C
 SC_SHIFT=0x2A
 
 def is_run_stopped():              
-    pop_px = pyautogui.pixel(*pop_consts.MAP_CAR_BOARD_POS)       
-    return pop_px != pop_consts.MAP_CAR_BOARD_COLOR
+    pop_px = pyautogui.pixel(*pop_consts.MAP_CAR_LAP_POS)       
+    return pop_px != pop_consts.MAP_CAR_LAP_COLOR
 
 def wait_until_rush_finish():
 
