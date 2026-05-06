@@ -1,3 +1,5 @@
+import glob
+
 import pyautogui
 import time 
 import os
@@ -261,7 +263,7 @@ def lingqu_shenmi(acc,hh):
                 time.sleep(1)
                 takeTimes()
                 time.sleep(1)
-                tt = readTimes()                
+                tt = readTimes()
             else:
                 pyautogui.click(685,459)#queding
                 
@@ -295,26 +297,118 @@ def readTimes():
  
     return [xs,fz]
  
+def do_caiquan():
+    time.sleep(2)
+
+    for i in range(100):
+        loc = pyautogui.locateOnScreen(r'pics\caiquan_0.png',confidence=0.9,region=(265, 90, 250, 80))
+
+        if loc is not None:
+            logger.debug('no items found, caiquan is finished')
+            break
+        caiquan()
+ 
+
+
 def caiquan():
     pyautogui.click(390,200)#x_offset=80,y_offset=80
     time.sleep(0.5)
-    pyautogui.click(497,475)#jixu
-    time.sleep(1)   
+    global_state.caiquan_current_level=1
 
-    pyautogui.click(350,600)#x_offset=190  
-    time.sleep(3)  
-    
-    jd1=(1000,445)#y_offset=415/385=30
-    jd_color=(8,61,105)
+    while caiquan_go():
+        pass
+
+    logger.debug('caiquan finished')
+
+
+ 
  
 
 def caiquan_go():
-    pyautogui.click(497,475)#jixu
-    time.sleep(1)   
-    img = pyautogui.screenshot(region=(265, 90, 250, 80))   
+
+    pix = pyautogui.pixel(*pop_consts.RPS_RESULT_DIALOG_POS)
+    if pix==pop_consts.RPS_RESULT_DIALOG_COLOR:
+        logger.debug('caiquan waiting for click') 
+        pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#jixu
+        time.sleep(1)
+
+    rps_lv = rps_level()
+    logger.debug(f'caiquan level: {rps_lv}')
+    is_quit=False
+
+    if global_state.caiquan_current_level==rps_lv:
+        logger.debug('caiquan level is the same as current level, need to quit')
+        is_quit=True
+    else:
+        global_state.caiquan_current_level = rps_lv
+
+    robo_possibles = rps_robot_throwing()
+    click_pos = None
+
+    if robo_possibles is not None:
+        logger.debug(f'caiquan robot possibles: {robo_possibles}')
+        if 'jian' == robo_possibles:
+            click_pos = pop_consts.RPS_SHI_POS
+        elif 'shi' == robo_possibles:
+            click_pos = pop_consts.RPS_BU_POS
+        elif 'bu' == robo_possibles:
+            click_pos = pop_consts.RPS_JIAN_POS
+        elif 'shi_bu' == robo_possibles:
+            click_pos = pop_consts.RPS_BU_POS      
+        elif 'jian_bu' == robo_possibles:
+            click_pos = pop_consts.RPS_JIAN_POS
+        elif 'jian_shi' == robo_possibles:
+            click_pos = pop_consts.RPS_SHI_POS
+
+    if click_pos is not None:
+        logger.debug(f'caiquan click position: {click_pos}')
+        pyautogui.click(click_pos)
+
+        for i in range(30):
+            time.sleep(1)
+            pix = pyautogui.pixel(*pop_consts.RPS_RESULT_DIALOG_POS)
+            if pix!=pop_consts.RPS_RESULT_DIALOG_COLOR:
+                logger.debug('caiquan result is out, checking level') 
+                if is_quit or rps_lv==5:
+                    logger.debug(f'caiquan quit or reach level 5, click jixu to quit, current level: {rps_lv}')
+                    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_CANCEL_POS)#cancel
+                    time.sleep(1)
+                    pyautogui.click(*pop_consts.RPS_RESULT_BONUS_POS)#lingqu
+                    return False 
+                else:
+                    logger.debug(f'caiquan continue to next level, current level: {rps_lv}')
+                    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#ok
+                    time.sleep(1)
+                    return True
     
+    return False
+
+
+def rps_level(): 
+    for i in range(9):
+        time.sleep(1)
+        pix = pyautogui.pixel(1000,445+30*i)
+        if pix==(8,61,105):
+            return i+1
+
+    return None
     
- 
+def rps_robot_throwing():
+    img = pyautogui.screenshot(region=pop_consts.RPS_ROBOT_AREA)   
+
+    cqfiles = glob.glob(os.path.join('pics','cq_*.png'))
+
+    for cqfile in cqfiles:
+        loc = pyautogui.locate(cqfile, img, confidence=0.9)
+        if loc is not None:
+            logger.debug(f'Found match for {cqfile} at location {loc}')
+            robo_res = cqfile.removeprefix("pics\\cq_").removesuffix(".png")
+
+            return robo_res
+        
+        logger.debug('No match found for any cq image')
+    
+    return None
 
 
 
@@ -325,6 +419,8 @@ if __name__ == '__main__':
     #goumai(slot=9,lv1=5,lv2=6,scrolls=1)
     #autorun9(6)
     #dafuweng()
-    autorun9(round_limit=3,is_limit_finish=True)
+    #autorun9(round_limit=3,is_limit_finish=True)
     #logger.debug(f'autorun9 completed, current round:{current_round}, success round: {finish_round}, round limit: {round_limit}')
+    do_caiquan()
+    
     time.sleep(2)
