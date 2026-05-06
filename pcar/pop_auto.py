@@ -81,6 +81,48 @@ def run9_blind():
 
     return wait_until_rush_finish()
 
+def run9_blind2():
+    
+    mykb.press(SC_F5)
+    time.sleep(10)
+    print('start running, hold up')
+    global_state.check_run_task()
+    time.sleep(5)
+    mykb.hold(SC_UP) #hold up
+    time.sleep(2)
+
+    # --- PHASE 1: THE SPIRAL (0 to 85) ---
+    print('Entering spiral...')
+    for i in range(86): 
+        mykb.hold(SC_RIGHT)
+        time.sleep(0.7)#turn right for 0.5s
+        mykb.release(SC_RIGHT)
+        time.sleep(0.4)#run straight for 0.4s
+
+    # --- PHASE 2: THE STRAIGHTAWAY (86 to 91) ---
+    # (These slight right taps might be correcting for drift)
+    print('Entering straightaway...')
+    for i in range(6): 
+        mykb.hold(SC_RIGHT)
+        time.sleep(0.3)#turn right for 0.3s
+        mykb.release(SC_RIGHT)
+        time.sleep(1.5)#run straight for 1.5s
+        if is_run_stopped():
+            print('rush finished, break the straightaway loop at step:', i)
+            break;
+
+    print('route finished, turning stopped')
+    #time.sleep(10)#581,702=62,70,84
+    for i in range(30):
+        if is_run_stopped():
+            print('rush finished, release up')
+            break
+        time.sleep(1)
+
+    mykb.release(SC_UP)#drive end
+    print('drive end, release up, checking result')
+
+    return wait_until_rush_finish()
 
 
 
@@ -174,15 +216,23 @@ def runLvZhou_blind():
 
     print('Entering route...')
 
-    for i in range(150): 
+    for i in range(180): 
         mykb.press(SC_CTRL)      
         mykb.press(SC_SPACE)
+        if 1!=0 and i%30==0:
+            mykb.hold(SC_RIGHT)
+            time.sleep(0.5)#turn right for 0.3s
+            mykb.release(SC_RIGHT)            
         time.sleep(1)#attack every 1s
+        if is_run_stopped():
+            print('rush finished, break the straightaway loop at step:', i)
+            break;
 
     print('route finished, stop turning, waiting 10 seconds')
-    time.sleep(10)
+    
     mykb.release(SC_UP)#drive end
     print('drive end, release up, checking result');
+    return wait_until_rush_finish()
 
 
 
@@ -233,4 +283,8 @@ def runLvZhou_eye():
 
 if __name__ == "__main__":
     time.sleep(5) # Time to switch to the game window
-    runLvZhou_blind()
+    #runLvZhou_blind()
+    run9_blind2()
+
+
+

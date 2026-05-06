@@ -18,7 +18,7 @@ def play(acc):
     pop_controller.jianglixiang()
     #print('gou mai')
     #pop_controller.goumai(slot=4,lv1=1,lv2=0,scrolls=1)
-    pop_controller.autorun9(10)
+    pop_controller.autorun9(9)
     #print('shen mi')
     #pop_shm.shenmi()
     time.sleep(5)

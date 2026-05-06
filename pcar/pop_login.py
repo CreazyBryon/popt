@@ -1,4 +1,3 @@
-
 import subprocess
 import pyautogui
 import time 
@@ -77,7 +76,7 @@ def human_horizontal_slide(dist1):
         
         # Pull back slowly to the exact correct spot
         correction_duration = random.uniform(0.3, 0.6)
-        pyautogui.moveTo(end_x, start_y, duration=correction_duration, tween=pyautogui.easeOutCubic)
+        pyautogui.moveTo(end_x, start_y, duration=correction_duration, tween=pyautogui.easeInOutCubic)
         
     else:
         # Normal, careful slide directly to the target
@@ -358,7 +357,7 @@ def is_already_login(acid):
                     logger.debug("Account name image not found: %s", account_name_pic)
                     return False;   
                 else:
-                    loc = pyautogui.locateOnScreen(rf'pics\{acid}.png',confidence=1,region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
+                    loc = pyautogui.locateOnScreen(rf'pics\{acid}.png',confidence=0.9,region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
                     if(loc!=None):
                         logger.debug('already logged in with account: %s', acid)
                         global_state.current_account = acid
@@ -384,7 +383,7 @@ def login2(acid, forced=False):
     is_login_up = return_login()
 
     logger.critical('start to login with account: %s', acid) 
-    time.sleep(3)
+ 
     startT = str(datetime.now())
  
     if(is_login_up):

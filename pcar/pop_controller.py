@@ -1,4 +1,3 @@
-
 import pyautogui
 import time 
 import os
@@ -131,6 +130,7 @@ def autorun9(round_limit=5,is_limit_finish=True):
 def wait_until_room_ready():
 
     for i in range(50):
+        pyautogui.click(686,575)#shengji tongzhi
 
         pix = pyautogui.pixel(1063, 678)
         if pix==(40,136,255):
@@ -295,20 +295,36 @@ def readTimes():
  
     return [xs,fz]
  
+def caiquan():
+    pyautogui.click(390,200)#x_offset=80,y_offset=80
+    time.sleep(0.5)
+    pyautogui.click(497,475)#jixu
+    time.sleep(1)   
 
+    pyautogui.click(350,600)#x_offset=190  
+    time.sleep(3)  
+    
+    jd1=(1000,445)#y_offset=415/385=30
+    jd_color=(8,61,105)
+ 
+
+def caiquan_go():
+    pyautogui.click(497,475)#jixu
+    time.sleep(1)   
+    img = pyautogui.screenshot(region=(265, 90, 250, 80))   
+    
+    
+ 
 
 
 
 if __name__ == '__main__':
     setup_logging()
     time.sleep(3)
-    run9()
+    #run9()
     #goumai(slot=9,lv1=5,lv2=6,scrolls=1)
     #autorun9(6)
     #dafuweng()
-    #autorun9(round_limit=10,is_limit_finish=True)
+    autorun9(round_limit=3,is_limit_finish=True)
     #logger.debug(f'autorun9 completed, current round:{current_round}, success round: {finish_round}, round limit: {round_limit}')
     time.sleep(2)
-
-
-
