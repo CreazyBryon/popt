@@ -358,7 +358,7 @@ def is_already_login(acid):
                     logger.debug("Account name image not found: %s", account_name_pic)
                     return False;   
                 else:
-                    loc = pyautogui.locateOnScreen(rf'pics\{acid}.png',confidence=0.8,region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
+                    loc = pyautogui.locateOnScreen(rf'pics\{acid}.png',confidence=1,region=pop_consts.UI_ACCOUNT_NAME_AREA_REGION)
                     if(loc!=None):
                         logger.debug('already logged in with account: %s', acid)
                         global_state.current_account = acid

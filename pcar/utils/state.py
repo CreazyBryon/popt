@@ -80,7 +80,7 @@ class GlobalState:
         if succeed:
             task.succeed_round += 1
 
-        logger.info(
+        logger.critical(
             f'[{self.current_account}],'
             f'round:{task.finished_round},'
             f'success:{task.succeed_round},'
