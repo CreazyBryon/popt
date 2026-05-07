@@ -301,11 +301,7 @@ def do_caiquan():
     time.sleep(2)
 
     for i in range(100):
-        loc = pyautogui.locateOnScreen(r'pics\caiquan_0.png',confidence=0.9,region=(265, 90, 250, 80))
 
-        if loc is not None:
-            logger.debug('no items remain, caiquan is finished')
-            break
         caiquan()
  
 
@@ -336,7 +332,7 @@ def caiquan_return():
         for i in range(10):
             time.sleep(0.5)
             pix = pyautogui.pixel(*pop_consts.RPS_RESULT_POS)
-            if pix!=pop_consts.RPS_RESULT_DRAW_COLOR:
+            if pix==pop_consts.RPS_RESULT_DRAW_COLOR:
                 logger.debug('caiquan result is draw, give up and return') 
                 return False
             
@@ -392,28 +388,22 @@ def caiquan():
     for i in range(3):
         time.sleep(2)
         cres= caiquan_return()
-        if not cres:
-            logger.debug('caiquan result for round 2 is out')
+        dig = wait_caiquan_dialog_up()
+        if not dig:
+            logger.debug('caiquan result dialog did not appear for round 2, something may be wrong')
+            return False 
+
+        if not cres or i==2:
+            logger.debug(f'caiquan result {i+2} is out, result is draw')
             pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_CANCEL_POS)#cancel
             time.sleep(1)
             pyautogui.click(*pop_consts.RPS_RESULT_BONUS_POS)#lingqu
             time.sleep(1)   
             return          
-        else:
-            dig = wait_caiquan_dialog_up()
-            if not dig:
-                logger.debug('caiquan result dialog did not appear for round 2, something may be wrong')
-                return False   
-             
+        else:             
             logger.debug(f'caiquan result {i+2} is out, result is win')  
             pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#ok
-
-    dig = wait_caiquan_dialog_up()
-    if dig:
-        pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_CANCEL_POS)#cancel
-        time.sleep(1)
-        pyautogui.click(*pop_consts.RPS_RESULT_BONUS_POS)#lingqu
-        time.sleep(1)    
+  
  
 
 
@@ -505,7 +495,7 @@ def rps_robot_throwing():
         loc = pyautogui.locate(cqfile, img, confidence=0.9)
         if loc is not None:
             logger.debug(f'Found match for {cqfile} at location {loc}')
-            robo_res = cqfile.removeprefix("pics\\cq_").removesuffix(".png")
+            robo_res = cqfile[8:-4]
 
             return robo_res
         
@@ -520,10 +510,10 @@ if __name__ == '__main__':
     time.sleep(3)
     #run9()
     #goumai(slot=9,lv1=5,lv2=6,scrolls=1)
-    #autorun9(6)
+    autorun9(5)
     #dafuweng()
     #autorun9(round_limit=3,is_limit_finish=True)
     #logger.debug(f'autorun9 completed, current round:{current_round}, success round: {finish_round}, round limit: {round_limit}')
-    do_caiquan()
+    #do_caiquan()
     
     time.sleep(2)
