@@ -45,7 +45,7 @@ def do_lingqu(acc,ttt,hh):
     if(ttt<current_datetime):
         logger.debug('time reached, start lingqu, account:%s', acc)
   
-        pyautogui.press('ctrl')
+        pyautogui.press('ctrl')#active screen
         isLoged = pop_login.login2(acc)
         if not isLoged:
             logger.debug('login failed, account:%s', acc)
@@ -61,17 +61,17 @@ def do_lingqu(acc,ttt,hh):
         h1,m1=pop_controller.lingqu_shenmi(acc,hh)
         
         if(h1==0 and m1==0):
-            logger.debug('linqu failed, account:%s', acc)
+            logger.critical('linqu failed, account:%s', acc)
             return -1
         
         new_time = datetime.now() + timedelta(hours=h1,minutes=(m1+1))
         shm_account_states[acc]=[new_time,h1]
-        logger.debug('lingqu success, account:%s, next time:%s', acc, new_time)
+        logger.critical('lingqu success, account:%s, next time:%s', acc, new_time)
  
         return 0
     else:
         time_left=ttt-current_datetime
-        logger.debug('not time yet, left:%s@%s@%s', acc, time_left, hh)
+        logger.critical('not time yet, account:%s, time left:%s, hh:%s', acc, time_left, hh)
         return time_left.total_seconds()
     
 
@@ -101,9 +101,7 @@ def shenmi():
                 if box_left_time<min_left_time:
                     min_left_time=box_left_time
 
-            if box_left_time==-1:
-                logger.debug('account:%s has error, stop whole process', acc)
-                return
+
                 
         
         if(last_account!=None):
@@ -112,7 +110,7 @@ def shenmi():
         #if min_left_time>1200:
         if 1==2:
             logger.debug('start auto run......')
-            pop_controller.autorun9(round_limit=6,is_limit_finish=True)
+            pop_controller.autorun9(round_limit=5,is_limit_finish=True)
 
         
         logger.debug('finished, open box:%s; total box:%s', open_count, shm_box_count)

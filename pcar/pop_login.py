@@ -113,13 +113,14 @@ def is_tc_game_up():
 
 
 def launchPP():
-    for i in range(30):
+    failed_times=0
+    for i in range(60):
         time.sleep(1)
         pix = pyautogui.pixel(*pop_consts.LOGIN_LAUNCH_BUTTON_POS)
         logger.debug('launch button pixel color: %s', pix)
  
         if(pix==pop_consts.LOGIN_LAUNCH_BUTTON_RUNNING_COLOR):
-            logger.debug('running, stop first')
+            logger.debug('running, stop first, failed times: %d', failed_times)
             pyautogui.click(*pop_consts.LOGIN_LAUNCH_BUTTON_POS)# stop pp
             time.sleep(0.1)
             pyautogui.press('enter')# que ren 
@@ -130,15 +131,15 @@ def launchPP():
             pyautogui.click(*pop_consts.LOGIN_LAUNCH_BUTTON_POS)#qi dong
 
             logger.debug('login process finished, launch clicked, waiting for game to showup')
-            for i in range(60):
+            for i in range(100):
                 time.sleep(1)    
                 if(is_karter_up()):
                     logger.debug('karter started running')
                     return 1;      
                 else:
                     logger.debug('not running yet')
-            logger.debug('karter win not show up after 60s, something wrong, retry click launch')
-            return -1;
+            logger.debug('launch clicked, but karter win not show up after 100s, something wrong, retry click launch')
+            failed_times=failed_times+1
         else:
             logger.debug('launch button color not matched, retry: %d', i)
                   
