@@ -1,9 +1,9 @@
 import rps
 
 STARTING_CARDS = {
-	"rock": 258,
-	"paper": 262,
-	"scissors": 294,
+	"rock": 256,
+	"paper": 263,
+	"scissors": 244,
 }
 
 OUTCOME_SCORE = {
@@ -14,50 +14,85 @@ OUTCOME_SCORE = {
 
 
 def choose_card_to_play(announced_options, player_cards):
-	best_choice = None
-	best_profile = None
+    """
+    Final, simplified, and correct strategy:
+    1. Find the moves that give the most possible wins.
+    2. If there's a tie between "rock" and another card, be smart:
+       - If "scissors" is NOT a possible throw from the bot, our rock has no special value, so save it.
+       - Otherwise (if scissors is a threat or rock is the only winner), it's okay to use rock.
+    3. If the tie doesn't involve rock, pick the card you have more of.
+    """
+    best_moves = []
+    max_wins = -1
 
-	for choice in rps.CHOICES:
-		if player_cards[choice] <= 0:
-			continue
+    # Step 1: Find all moves that result in the maximum number of wins.
+    for choice in rps.CHOICES:
+        if player_cards[choice] <= 0:
+            continue
+        
+        wins = sum(1 for bot_option in announced_options if rps.decide_result(choice, bot_option) == "win")
+        
+        if wins > max_wins:
+            max_wins = wins
+            best_moves = [choice]
+        elif wins == max_wins:
+            best_moves.append(choice)
 
-		results = [rps.decide_result(choice, bot_option) for bot_option in announced_options]
-		profile = (
-			min(OUTCOME_SCORE[result] for result in results),
-			sum(OUTCOME_SCORE[result] for result in results),
-			player_cards[choice],
-		)
+    # If there are no moves that can win, fall back to a move that is least likely to lose.
+    if max_wins == 0:
+        best_choice = None
+        # Profile: (draws, card_count)
+        best_profile = (-1, -1)
+        for choice in rps.CHOICES:
+            if player_cards[choice] <= 0:
+                continue
+            draws = sum(1 for bot_option in announced_options if rps.decide_result(choice, bot_option) == "draw")
+            profile = (draws, player_cards[choice])
+            if profile > best_profile:
+                best_profile = profile
+                best_choice = choice
+        return best_choice
 
-		if best_profile is None or profile > best_profile:
-			best_choice = choice
-			best_profile = profile
+    # Step 2: Analyze the best moves to break ties.
+    if len(best_moves) == 1:
+        # No tie, the choice is clear.
+        return best_moves[0]
+    
+    # There is a tie. Apply smart "rock-saving" logic.
+    is_rock_an_option = "rock" in best_moves
+    non_rock_options = [move for move in best_moves if move != "rock"]
 
-	return best_choice
+    if is_rock_an_option and non_rock_options:
+        # Tie-break between rock and at least one other card.
+        bot_can_throw_scissors = "scissors" in announced_options
+        
+        if not bot_can_throw_scissors:
+            # The bot CANNOT throw scissors. Our rock has no special value here.
+            # Therefore, save the rock and use the best non-rock option.
+            return max(non_rock_options, key=lambda c: player_cards[c])
+
+    # In all other tie cases (e.g., bot can throw scissors, or tie is between paper/scissors),
+    # just use the card we have the most of from the best options.
+    return max(best_moves, key=lambda c: player_cards[c])
 
 def any_card_empty(player_cards):
 	return any(player_cards[choice] == 0 for choice in rps.CHOICES)
-
-def rock_excess(player_cards):
-	"""Returns how much rock exceeds the minimum of other cards."""
-	min_other = min(player_cards["paper"], player_cards["scissors"])
-	return player_cards["rock"] - min_other
 
 def choose_card_for_round_6_7(player_cards):
 	"""For rounds 6-7, bot always throws scissors, so rock wins."""
 	if player_cards["rock"] > 0:
 		return "rock"
+	# If no rock, we can't win, so we can't continue.
 	return None
 
 def play_one_game(player_cards, game_number):
 	coins = 0
 	round_results = []
-
-	# If rock exceeds others by more than 10, go to round 7 to burn excess rock
-	max_round = 7 if rock_excess(player_cards) > 10 else 5
+	max_round = 7  # Always aim for 7 rounds for maximum coins
 
 	print(f"Game {game_number}")
 	print(f"Cards before game: {rps.format_card_counts(player_cards)}")
-	print(f"Strategy: {'Full 7 rounds (rock excess)' if max_round == 7 else 'Rounds 1-5'}")
+	print("Strategy: Optimal (Aim for 7 rounds)")
 
 	for round_number in range(1, max_round + 1):
 		while True:
@@ -70,9 +105,13 @@ def play_one_game(player_cards, game_number):
 				player_choice = choose_card_to_play(announced_options, player_cards)
 
 			if player_choice is None:
-				print("Player 5 cannot throw because all cards are 0.")
-				print("Result: run ended with 0 gold coin(s).")
-				return 0, False
+				# This can happen if we need a card we don't have (e.g., no rock for round 6)
+				print(f"Player 5 cannot make a winning move and stops.")
+				print(f"Coins taken: {coins}")
+				print(f"Cards left: {rps.format_card_counts(player_cards)}")
+				print(f"Result summary: {round_results}")
+				print()
+				return coins, True # Stop playing games
 
 			bot_choice = rps.choose_bot_throw(round_number, announced_options)
 			player_cards[player_choice] -= 1
@@ -94,21 +133,23 @@ def play_one_game(player_cards, game_number):
 
 			if result == "draw":
 				print("Player 5 retries the same round.\n")
+				# A draw consumes a card but doesn't end the game. We continue the inner while loop.
 				continue
 
 			if result == "lose":
 				print("Player 5 failed the run and gets 0 gold coin(s).")
 				print(f"Cards left: {rps.format_card_counts(player_cards)}")
 				print()
-				return 0, False
+				return 0, False # Game lost, but we can start a new one
 
+			# If we win the round:
 			round_results.append(result)
 			if round_number > 1:
 				coins += 1
 			print()
-			break
+			break # Break the inner while loop to proceed to the next round
 
-	print(f"Player 5 stops after round {max_round}.")
+	print(f"Player 5 won all {max_round} rounds.")
 	print(f"Coins taken: {coins}")
 	print(f"Cards left: {rps.format_card_counts(player_cards)}")
 	print(f"Result summary: {round_results}")

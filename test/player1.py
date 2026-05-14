@@ -2,9 +2,9 @@ import rps
 
 
 STARTING_CARDS = {
-	"rock": 258,
-	"paper": 262,
-	"scissors": 294,
+	"rock": 256,
+	"paper": 263,
+	"scissors": 244,
 }
 
 

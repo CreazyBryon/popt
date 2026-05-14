@@ -313,25 +313,41 @@ def readTimes():
  
 def do_caiquan():
     time.sleep(2)
-
+    logger.critical('caiquan started, will run 100 rounds')
     for i in range(100):
-
         caiquan()
- 
+        if i%10==0:
+            logger.critical(f'caiquan round {i} completed')
 
+    logger.critical('caiquan finished all rounds')
+
+_spare_card=''
 
 def caiquan_return():
+
     robo_possibles = rps_robot_throwing()
     click_pos = pop_consts.RPS_SHI_POS # default shi
 
     if robo_possibles is not None:
         logger.debug(f'caiquan robot possibles: {robo_possibles}')
         if 'jian' == robo_possibles:
-            click_pos = pop_consts.RPS_SHI_POS
+            if 'jian' == _spare_card:
+                logger.debug('caiquan has spare jian card, click jian to draw')
+                click_pos = pop_consts.RPS_JIAN_POS
+            else:
+                click_pos = pop_consts.RPS_SHI_POS
         elif 'shi' == robo_possibles:
-            click_pos = pop_consts.RPS_BU_POS
+            if 'shi' == _spare_card:
+                logger.debug('caiquan has spare shi card, click shi to draw')
+                click_pos = pop_consts.RPS_SHI_POS
+            else:
+                click_pos = pop_consts.RPS_BU_POS
         elif 'bu' == robo_possibles:
-            click_pos = pop_consts.RPS_JIAN_POS
+            if 'bu' == _spare_card:
+                logger.debug('caiquan has spare bu card, click bu to draw')
+                click_pos = pop_consts.RPS_BU_POS
+            else:
+                click_pos = pop_consts.RPS_JIAN_POS
         elif 'shi_bu' == robo_possibles:
             click_pos = pop_consts.RPS_BU_POS      
         elif 'jian_bu' == robo_possibles:
@@ -367,6 +383,12 @@ def wait_caiquan_dialog_up():
 
     logger.debug('caiquan dialog is not up')  
     return False
+
+def is_any_card_empty():
+    loc = pyautogui.locateOnScreen(r'pics\card_empty.png', confidence=1, region=(800, 300, 400, 200))
+    return loc is not None
+
+
 
 def caiquan():
     pyautogui.click(390,200)#x_offset=80,y_offset=80
@@ -415,9 +437,93 @@ def caiquan():
         else:             
             logger.debug(f'caiquan result {i+3} is win')  
             pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#ok
-  
- 
 
+
+def is_rps_level_5():
+    pix = pyautogui.pixel(1000,321)
+    return pix==(8,61,105)
+
+def caiquan3():
+    pyautogui.click(390,200)#x_offset=80,y_offset=80
+    time.sleep(1)
+ 
+    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#jixu
+    time.sleep(2)
+  
+    caiquan_return()
+
+    dig = wait_caiquan_dialog_up()
+    if not dig:
+        logger.debug('caiquan result dialog did not appear, something may be wrong')
+        return False
+    
+    logger.debug('caiquan result 1 is out')  
+    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#ok
+    time.sleep(2)    
+ 
+    caiquan_return()
+
+    dig = wait_caiquan_dialog_up()
+    if not dig:
+        logger.debug('caiquan result dialog did not appear for round 2, something may be wrong')
+        return False
+ 
+    logger.debug('caiquan result 2 is out')  
+    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#ok
+     
+    for i in range(20):
+        time.sleep(2)
+        cres= caiquan_return()
+        dig = wait_caiquan_dialog_up()
+        if not dig:
+            logger.debug(f'caiquan result dialog did not appear for round {i+3}, something may be wrong')
+            return False 
+
+        if is_rps_level_5() and cres:
+            logger.debug(f'caiquan level is 5, quit and lingqu bonus')
+            pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_CANCEL_POS)#cancel
+            time.sleep(1)
+            pyautogui.click(*pop_consts.RPS_RESULT_BONUS_POS)#lingqu
+            time.sleep(1)   
+            return          
+            
+        logger.debug(f'caiquan result {i+3} result is {"win" if cres else "draw"}, continue')  
+        pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#ok
+    
+
+  
+
+def caiquan0():
+    pyautogui.click(390,200)#x_offset=80,y_offset=80
+    time.sleep(1)
+ 
+    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#jixu
+    time.sleep(2)
+  
+    caiquan_return()
+
+    dig = wait_caiquan_dialog_up()
+    if not dig:
+        logger.debug('caiquan result dialog did not appear, something may be wrong')
+        return False
+    
+    logger.debug('caiquan result 1 is out')  
+    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_OK_POS)#ok
+    time.sleep(2)    
+ 
+    caiquan_return()
+
+    dig = wait_caiquan_dialog_up()
+    if not dig:
+        logger.debug('caiquan result dialog did not appear for round 2, something may be wrong')
+        return False
+ 
+    logger.debug('caiquan result 2 is out')  
+    pyautogui.click(*pop_consts.RPS_RESULT_DIALOG_CANCEL_POS)#cancel
+    time.sleep(1)
+    pyautogui.click(*pop_consts.RPS_RESULT_BONUS_POS)#lingqu
+    time.sleep(1)   
+ 
 
 def caiquan2():
     pyautogui.click(390,200)#x_offset=80,y_offset=80
@@ -492,7 +598,7 @@ def caiquan_go():
 def rps_level(): 
     for i in range(9):
         time.sleep(1)
-        pix = pyautogui.pixel(1000,445+30*i)
+        pix = pyautogui.pixel(1000,445-30*i)
         if pix==(8,61,105):
             return i+1
 
