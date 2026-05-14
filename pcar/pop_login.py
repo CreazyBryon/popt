@@ -261,6 +261,9 @@ def return_login():
                 pyautogui.click(1097,261)#switch account
                 time.sleep(3)
                 break
+            if(is_login_window_up()):
+                logger.debug('login window show up')
+                return True;
              
 
     if is_tc_game_up():

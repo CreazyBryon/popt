@@ -71,7 +71,7 @@ def do_lingqu(acc,ttt,hh):
         return 0
     else:
         time_left=ttt-current_datetime
-        logger.critical('not time yet, account:%s, time left:%s, hh:%s', acc, time_left, hh)
+        logger.debug('%s, left:%s, hh:%s', acc, time_left, hh)
         return time_left.total_seconds()
     
 
@@ -122,7 +122,5 @@ def shenmi():
 if __name__ == '__main__':
     setup_logging()
     time.sleep(2)
+    #pop_controller.autorun9(round_limit=5,is_limit_finish=True)
     shenmi()
-
-
-
