@@ -6,6 +6,7 @@ import pop_controller
 
 from datetime import datetime, timedelta
 
+from utils.d4 import d4ocr
 import logging
 from utils.logging_config import setup_logging
 logger = logging.getLogger(__name__)
@@ -36,6 +37,82 @@ def saveHistory():
     with open('smt.txt', 'w') as file:
         for key, value in shm_account_states.items():
             file.write(f'{key}@{value[0]}@{value[1]}\n')    
+
+
+
+def lingqu_shenmi(acc,hh):
+    pyautogui.click(250,734)#shenmi
+    time.sleep(3)
+ 
+    takeTimes()
+    time.sleep(1)
+    tt = readTimes()
+    logger.debug(f'Shenmi times: {tt}')
+ 
+    if tt==[0,0]:
+        logger.debug('shenmi time reached..................')
+          
+        pyautogui.click(684,585)
+        time.sleep(10)
+        #jieguo
+        npath = os.path.join('pics','shenmi',acc+'#'+str(hh)+'@'+str(datetime.now()).replace(':','')+'.png')
+        pyautogui.screenshot(npath)
+        pyautogui.click(684,585)
+        time.sleep(1)
+        takeTimes()
+        time.sleep(1)
+        tt = readTimes()
+        
+        if (tt==[0,30]):
+            pyautogui.click(684,585)
+            time.sleep(0.5)
+            pyautogui.click(614,493)#kaiqi        
+            time.sleep(10)
+            
+            loc = pyautogui.locateOnScreen(r'pics\clbz.png',confidence=0.9)
+            
+            if loc==None:
+                #jieguo
+                npath = os.path.join('pics','shenmi',acc+'#'+str(hh)+'@'+str(datetime.now()).replace(':','')+'.png')
+                pyautogui.screenshot(npath)
+                pyautogui.click(684,585)
+                time.sleep(1)
+                takeTimes()
+                time.sleep(1)
+                tt = readTimes()
+            else:
+                pyautogui.click(685,459)#queding
+                
+        
+        logger.debug(f'Shenmi times after processing: {tt}')
+    
+    pyautogui.click(1335,50)
+    time.sleep(1)
+ 
+    return tt
+
+def takeTimes():
+    pyautogui.screenshot(r"pics\xs.png", region=(518, 460, 73, 53))
+    pyautogui.screenshot(r"pics\fz.png", region=(685, 460, 81, 53))    
+   
+def readTimes():
+    xs=0
+    fz=0
+    with open(r'pics\xs.png','rb') as f:
+        imb = f.read()
+        result = d4ocr.classification(imb)
+        
+        if result.isdigit():
+            xs=int(result)
+ 
+    with open(r'pics\fz.png','rb') as f:
+        imb = f.read()
+        result = d4ocr.classification(imb)
+        
+        if result.isdigit():
+            fz=int(result)        
+ 
+    return [xs,fz]
  
 
 def do_lingqu(acc,ttt,hh):
@@ -53,12 +130,12 @@ def do_lingqu(acc,ttt,hh):
         
 
         logger.debug('lingqu jiangli')
-        #pop_controller.jianglixiang()
+        pop_controller.jianglixiang()
         #pop_controller.goumai(slot=4,lv1=1,lv2=0,scrolls=1)
 
         #lingqu shenmi
         logger.debug('lingqu shenmi, account:%s, ttt:%s, hh:%s', acc, ttt, hh)
-        h1,m1=pop_controller.lingqu_shenmi(acc,hh)
+        h1,m1=lingqu_shenmi(acc,hh)
         
         if(h1==0 and m1==0):
             logger.critical('linqu failed, account:%s', acc)
@@ -77,7 +154,7 @@ def do_lingqu(acc,ttt,hh):
 
  
 
-def shenmi():
+def shenmi_start():
     shm_round=0
     shm_box_count=0
 
@@ -101,9 +178,7 @@ def shenmi():
                 if box_left_time<min_left_time:
                     min_left_time=box_left_time
 
-
-                
-        
+       
         if(last_account!=None):
             logger.debug('last account=%s', last_account)    
         
@@ -111,8 +186,7 @@ def shenmi():
         if 1==2:
             logger.debug('start auto run......')
             pop_controller.autorun9(round_limit=5,is_limit_finish=True)
-
-        
+   
         logger.debug('finished, open box:%s; total box:%s', open_count, shm_box_count)
     
         time.sleep(60)
@@ -123,4 +197,4 @@ if __name__ == '__main__':
     setup_logging()
     time.sleep(2)
     #pop_controller.autorun9(round_limit=5,is_limit_finish=True)
-    shenmi()
+    shenmi_start()
