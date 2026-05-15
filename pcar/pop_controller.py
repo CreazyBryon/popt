@@ -113,11 +113,12 @@ def autorun9(round_limit=5,is_limit_finish=True):
         logger.critical('failed to open room 9, stop autorun for account:%s', account)
         return False
 
+    total_run=0
+
     try:
         while True:
-           
             run_finished = run9()
-
+            total_run += 1
             if run_finished:
                 failed_rounds_consecutive = 0
             else:
@@ -126,7 +127,7 @@ def autorun9(round_limit=5,is_limit_finish=True):
                 if failed_rounds_consecutive >= MAX_CONSECUTIVE_FAILURES:
                     logger.critical(f'Max consecutive failures reached for account:{account}, stopping autorun9')
                     break
- 
+                    
             if global_state.refresh_run_task(run_finished): 
                 break
   
@@ -138,7 +139,7 @@ def autorun9(round_limit=5,is_limit_finish=True):
         logger.exception('unknown exception, stop autorun, account:%s', account)
         return False
  
-    logger.critical(f'autorun9 end for account:{account}, round limit: {round_limit}, consecutive failed rounds: {failed_rounds_consecutive}')
+    logger.critical(f'autorun9 end for account:{account}, round limit: {round_limit}, total run: {total_run}, consecutive failed rounds: {failed_rounds_consecutive}')
     return True
 
 

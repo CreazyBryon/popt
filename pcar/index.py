@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 setup_logging()
 
  
-logger.critical('This is a critical message')
+logger.error('This is a critical message xxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
 
 for i in range(10):
     logger.info(f'Info message {i}')

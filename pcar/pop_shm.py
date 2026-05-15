@@ -41,58 +41,6 @@ def saveHistory():
             file.write(f'{key}@{value[0]}@{value[1]}\n')    
 
 
-
-def lingqu_shenmi(acc,hh):
-    pyautogui.click(250,734)#shenmi
-    time.sleep(3)
- 
-    takeTimes()
-    time.sleep(1)
-    tt = readTimes()
-    logger.debug(f'Shenmi times: {tt}')
- 
-    if tt==[0,0]:
-        logger.debug('shenmi time reached..................')
-          
-        pyautogui.click(684,585)
-        time.sleep(10)
-        #jieguo
-        npath = os.path.join('pics','shenmi',acc+'#'+str(hh)+'@'+str(datetime.now()).replace(':','')+'.png')
-        pyautogui.screenshot(npath)
-        pyautogui.click(684,585)
-        time.sleep(1)
-        takeTimes()
-        time.sleep(1)
-        tt = readTimes()
-        
-        if (tt==[0,30]):
-            pyautogui.click(684,585)
-            time.sleep(0.5)
-            pyautogui.click(614,493)#kaiqi        
-            time.sleep(10)
-            
-            loc = pyautogui.locateOnScreen(r'pics\clbz.png',confidence=0.9)
-            
-            if loc==None:
-                #jieguo
-                npath = os.path.join('pics','shenmi',acc+'#'+str(hh)+'@'+str(datetime.now()).replace(':','')+'.png')
-                pyautogui.screenshot(npath)
-                pyautogui.click(684,585)
-                time.sleep(1)
-                takeTimes()
-                time.sleep(1)
-                tt = readTimes()
-            else:
-                pyautogui.click(685,459)#queding
-                
-        
-        logger.debug(f'Shenmi times after processing: {tt}')
-    
-    pyautogui.click(1335,50)
-    time.sleep(1)
- 
-    return tt
-
 def takeTimes():
     pyautogui.screenshot(r"pics\xs.png", region=(518, 460, 73, 53))
     pyautogui.screenshot(r"pics\fz.png", region=(685, 460, 81, 53))    
@@ -117,6 +65,54 @@ def readTimes():
     return [xs,fz]
  
 
+def shenmi_jieguo():
+
+    npath = os.path.join('pics','shenmi',acc+'#'+str(hh)+'@'+str(datetime.now()).replace(':','')+'.png')
+    pyautogui.screenshot(npath)
+    pyautogui.click(684,585)#show next box
+    time.sleep(1)
+    takeTimes()#capture next box times
+    time.sleep(1)
+    tt = readTimes()#read next box times
+    return tt
+
+def lingqu_shenmi(acc,hh):
+    pyautogui.click(250,734)#shenmi
+    time.sleep(3)
+ 
+    takeTimes()
+    time.sleep(1)
+    tt = readTimes()
+    logger.debug(f'Shenmi times: {tt}')
+ 
+    if tt==[0,0]:
+        logger.debug('shenmi time reached..................')
+        pyautogui.click(684,585)#open box
+        time.sleep(10)#wait box open
+        #jieguo
+        tt = shenmi_jieguo()
+        
+        if (tt==[0,30]) or (tt==[1,0]) or (tt==[2,0]):
+            pyautogui.click(684,585)#open immiately
+            time.sleep(0.5)
+            pyautogui.click(614,493)#confirm use keys        
+            time.sleep(10)
+            
+            loc = pyautogui.locateOnScreen(r'pics\clbz.png',confidence=0.9)
+            
+            if loc==None:
+                tt = shenmi_jieguo()
+            else:
+                pyautogui.click(685,459)#open failed, inssufficient keys, confirm
+         
+        logger.critical(f'Shenmi jieguo: {tt}')
+    
+    pyautogui.click(1335,50)#close
+    time.sleep(1)
+ 
+    return tt
+
+
 def do_lingqu(acc,ttt,hh):
     
     current_datetime = datetime.now()
@@ -129,8 +125,7 @@ def do_lingqu(acc,ttt,hh):
         if not isLoged:
             logger.debug('login failed, account:%s', acc)
             return -1
-        
-
+         
         logger.debug('lingqu jiangli')
         pop_controller.jianglixiang()
         #pop_controller.goumai(slot=4,lv1=1,lv2=0,scrolls=1)

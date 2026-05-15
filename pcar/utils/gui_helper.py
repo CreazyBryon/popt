@@ -74,7 +74,7 @@ def _hud_loop(text, x, y, w, h):
     _hud_win.geometry(f"{w}x{h}+{x}+{y}")
 
     frame = tk.Frame(_hud_win, bg="#222222")
-    frame.pack(expand=True, fill="both", padx=8, pady=8)
+    frame.pack(expand=True, fill="both", padx=8, pady=0)
     frame.grid_columnconfigure(0, weight=1)
     frame.grid_columnconfigure(1, weight=0)
 
@@ -83,7 +83,7 @@ def _hud_loop(text, x, y, w, h):
         text=text,
         fg="white",
         bg="#222222",
-        font=("Segoe UI", 12, "bold"),
+        font=("Segoe UI", 10, "bold"),
         anchor="w",
         justify="left",
         wraplength=max(120, w - 150),
@@ -103,7 +103,7 @@ def _hud_loop(text, x, y, w, h):
         activeforeground="white",
         font=("Segoe UI", 10, "bold"),
         padx=14,
-        pady=6,
+        pady=1,
         cursor="hand2",
     )
     _hud_exit_button.grid(row=0, column=1, sticky="e", padx=(8, 0))
@@ -123,7 +123,7 @@ def _hud_loop(text, x, y, w, h):
     _running = False
 
 
-def show_hud(text="HUD", x=400, y=10, w=500, h=60):
+def show_hud(text="HUD", x=400, y=1, w=500, h=40):
     global _hud_thread
 
     if _hud_thread and _hud_thread.is_alive():
