@@ -1,3 +1,5 @@
+import sys
+
 import pyautogui
 import time
 
@@ -154,9 +156,10 @@ def do_lingqu(acc,ttt,hh):
 
  
 
-def shenmi_start():
+def shenmi_start(is_close=False):
     shm_round=0
     shm_box_count=0
+    logger.debug('shenmi_start, is_close:%s', is_close)
 
     while True:
         shm_round=shm_round+1
@@ -181,13 +184,16 @@ def shenmi_start():
        
         if(last_account!=None):
             logger.debug('last account=%s', last_account)    
+            if is_close:
+                logger.debug('close after one time lingqu, break')
+                pop_login.kill_kt()
         
         #if min_left_time>1200:
         if 1==2:
             logger.debug('start auto run......')
             pop_controller.autorun9(round_limit=5,is_limit_finish=True)
    
-        logger.debug('finished, open box:%s; total box:%s', open_count, shm_box_count)
+        logger.debug('finished, open box:%s; total box:%s, next time:%s', open_count, shm_box_count, min_left_time)
     
         time.sleep(60)
 
@@ -196,5 +202,11 @@ def shenmi_start():
 if __name__ == '__main__':
     setup_logging()
     time.sleep(2)
-    #pop_controller.autorun9(round_limit=5,is_limit_finish=True)
-    shenmi_start()
+    auto_round_arg = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+    is_close_arg = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    logger.debug(f'Input arguments: auto_round={auto_round_arg}, is_close={is_close_arg}')
+
+    if auto_round_arg > 0:
+        pop_controller.autorun9(round_limit=auto_round_arg,is_limit_finish=True)
+
+    shenmi_start(is_close=(is_close_arg == 1))

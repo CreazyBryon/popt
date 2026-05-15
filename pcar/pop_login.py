@@ -283,41 +283,7 @@ def return_login():
         logger.debug('login window not show up, retry: %d', i)
 
     return False;
- 
-
-def reset_login():
-    logger.debug('reset login, kill tc game and karter')
-    kill_kt()    
-    kill_tc_game()
-    time.sleep(3)
-    callup_tc_game()
-    for i in range(30):
-        time.sleep(1)
-        if is_tc_game_up():
-            logger.debug('tc game is still up, switch account')   
-            pyautogui.click(1057,129)#click user
-            time.sleep(2)
-            pyautogui.click(1097,261)#switch account
-            time.sleep(3)
-            break
-        else:
-            if(is_login_window_up()):
-                logger.debug('login window show up')
-                return True;
-
- 
-    logger.debug('start to check if login window show up')
-    for i in range(60):
-        time.sleep(1)
-        if(is_login_window_up()):
-            logger.debug('login window show up')
-            return True;
-
-        logger.debug('login window not show up, retry: %d', i)
-
-    return False;
- 
-
+  
 
 def get_pid(name):
     result = subprocess.run(
